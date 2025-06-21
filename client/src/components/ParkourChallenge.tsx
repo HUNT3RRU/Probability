@@ -32,39 +32,39 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
   // Generate platforms based on parkour level difficulty
   const generatePlatforms = () => {
     const platforms = [];
-    const baseY = 2;
+    const baseY = 3;
     
     switch (parkourLevel) {
       case 1: // Easy parkour - straight line with some gaps
         platforms.push(
-          { position: [0, baseY, -5] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [0, baseY + 1, -10] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [3, baseY + 2, -15] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [0, baseY + 3, -20] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [0, baseY + 4, -25] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
+          { position: [0, baseY, 0] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [4, baseY + 1, -4] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [0, baseY + 2, -8] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [-4, baseY + 3, -12] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [0, baseY + 4, -16] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
         );
         break;
         
       case 2: // Medium parkour - zigzag with moving platforms
         platforms.push(
-          { position: [0, baseY, -5] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [-4, baseY + 1, -10] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [4, baseY + 2, -15] as [number, number, number], size: [2, 0.5, 2] as [number, number, number], isMoving: true, moveRange: 2 },
-          { position: [-3, baseY + 3, -20] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
-          { position: [0, baseY + 4, -25] as [number, number, number], size: [2, 0.5, 2] as [number, number, number], isMoving: true, moveRange: 1.5 },
-          { position: [0, baseY + 5, -30] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
+          { position: [0, baseY, 0] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [-5, baseY + 1, -5] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [5, baseY + 2, -10] as [number, number, number], size: [2, 0.5, 2] as [number, number, number], isMoving: true, moveRange: 2 },
+          { position: [-4, baseY + 3, -15] as [number, number, number], size: [2, 0.5, 2] as [number, number, number] },
+          { position: [0, baseY + 4, -20] as [number, number, number], size: [2, 0.5, 2] as [number, number, number], isMoving: true, moveRange: 1.5 },
+          { position: [0, baseY + 5, -25] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
         );
         break;
         
       case 3: // Hard parkour - complex path with multiple moving platforms
         platforms.push(
-          { position: [0, baseY, -5] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
-          { position: [-5, baseY + 1, -10] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 3 },
-          { position: [5, baseY + 2, -15] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
-          { position: [0, baseY + 3, -20] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 2 },
-          { position: [-6, baseY + 4, -25] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 2.5 },
-          { position: [6, baseY + 5, -30] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
-          { position: [0, baseY + 6, -35] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
+          { position: [0, baseY, 0] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
+          { position: [-6, baseY + 1, -5] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 3 },
+          { position: [6, baseY + 2, -10] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
+          { position: [0, baseY + 3, -15] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 2 },
+          { position: [-7, baseY + 4, -20] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number], isMoving: true, moveRange: 2.5 },
+          { position: [7, baseY + 5, -25] as [number, number, number], size: [1.5, 0.5, 1.5] as [number, number, number] },
+          { position: [0, baseY + 6, -30] as [number, number, number], size: [3, 0.5, 3] as [number, number, number], isFinish: true }
         );
         break;
         
@@ -86,14 +86,14 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
     const finishPos = finishPlatform.position;
     const distance = playerPos.distanceTo(new THREE.Vector3(finishPos[0], finishPos[1], finishPos[2]));
     
-    // Camera follow player
+    // Camera follow player - better positioning for parkour
     const idealPosition = new THREE.Vector3(
-      playerPos.x,
-      playerPos.y + 8,
-      playerPos.z + 12
+      playerPos.x + 5,
+      playerPos.y + 10,
+      playerPos.z + 15
     );
-    state.camera.position.lerp(idealPosition, 0.05);
-    state.camera.lookAt(playerPos);
+    state.camera.position.lerp(idealPosition, 0.1);
+    state.camera.lookAt(new THREE.Vector3(playerPos.x, playerPos.y, playerPos.z - 5));
     
     if (distance < 4 && playerPos.y > finishPos[1] - 2) {
       if (!playerOnPlatform) {
@@ -132,7 +132,7 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
       <Player ref={playerRef} powerUpActive={false} mapSize={50} />
 
       {/* Starting platform */}
-      <mesh position={[0, 1, 5]} castShadow receiveShadow>
+      <mesh position={[0, 2, 8]} castShadow receiveShadow>
         <boxGeometry args={[4, 0.5, 4]} />
         <meshStandardMaterial color="#228B22" />
       </mesh>
@@ -187,9 +187,9 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
           key={index}
           position={platform.position}
           size={platform.size}
-          isFinish={platform.isFinish}
-          isMoving={platform.isMoving}
-          moveRange={platform.moveRange}
+          isFinish={platform.isFinish || false}
+          isMoving={platform.isMoving || false}
+          moveRange={platform.moveRange || 0}
           color={platform.isFinish ? "#FFD700" : "#8B4513"}
         />
       ))}
