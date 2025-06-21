@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -8,12 +8,13 @@ interface TreasureChestProps {
   probability: number;
   onCollect: () => void;
   collected: boolean;
+  playerRef?: React.RefObject<THREE.Group>;
 }
 
-export default function TreasureChest({ position, probability, onCollect, collected }: TreasureChestProps) {
+export default function TreasureChest({ position, probability, onCollect, collected, playerRef }: TreasureChestProps) {
   const [hovered, setHovered] = useState(false);
   const meshRef = useRef<THREE.Group>(null);
-  const playerDetectionRef = useRef<THREE.Mesh>(null);
+  const { scene } = useThree();
 
   // Convert probability to different formats for display
   const probabilityPercent = Math.round(probability * 100);
@@ -38,14 +39,20 @@ export default function TreasureChest({ position, probability, onCollect, collec
     // Gentle rotation
     meshRef.current.rotation.y += 0.01;
 
-    // Check for player collision
-    const camera = state.camera;
-    const distance = meshRef.current.position.distanceTo(camera.position);
+    // Check for player collision using playerRef if available, otherwise fallback to camera
+    let playerPosition = state.camera.position;
+    if (playerRef?.current) {
+      playerPosition = playerRef.current.position;
+    }
+    
+    const distance = meshRef.current.position.distanceTo(playerPosition);
     
     if (distance < 3 && !collected) {
       setHovered(true);
+      console.log(`Treasure at distance: ${distance.toFixed(2)}`);
       // Auto-collect when player is close enough
-      if (distance < 2) {
+      if (distance < 2.5) {
+        console.log(`Collecting treasure! Distance: ${distance.toFixed(2)}`);
         onCollect();
       }
     } else {

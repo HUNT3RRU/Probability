@@ -147,6 +147,7 @@ export default function Game() {
           probability={pos.probability}
           onCollect={() => handleTreasureCollect(`treasure-${index}`, pos.probability)}
           collected={treasuresFound.includes(`treasure-${index}`)}
+          playerRef={playerRef}
         />
       ))}
       
