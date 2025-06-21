@@ -197,10 +197,10 @@ export default function GameUI() {
                 <span className="text-lg">🎯</span>
                 <div>
                   <p className="text-sm font-medium text-purple-800">
-                    Parkour Challenge Available!
+                    Parkour Challenge Required!
                   </p>
                   <p className="text-xs text-purple-600">
-                    Walk to the purple portal
+                    Complete to advance to next level
                   </p>
                 </div>
               </div>

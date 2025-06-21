@@ -193,7 +193,7 @@ export default function Game() {
             outlineWidth={0.03}
             outlineColor="#000000"
           >
-            Parkour Challenge {parkourState.currentLevel}
+            Parkour Challenge {currentLevel}
           </Text>
           
           <Text
@@ -206,7 +206,20 @@ export default function Game() {
             outlineWidth={0.02}
             outlineColor="#000000"
           >
-            Walk close to enter!
+            Required to advance!
+          </Text>
+          
+          <Text
+            position={[0, 4, 18]}
+            fontSize={0.3}
+            color="#FFFFFF"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Walk close to enter
           </Text>
         </group>
       )}

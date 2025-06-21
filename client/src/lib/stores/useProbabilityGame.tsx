@@ -195,7 +195,21 @@ export const useProbabilityGame = create<GameState>()(
     },
     
     completeLevel: () => {
-      set({ gamePhase: "levelComplete" });
+      const { currentLevel, parkourState } = get();
+      
+      // If parkour hasn't been completed for this level, make it available
+      if (!parkourState.completed.includes(currentLevel)) {
+        set({
+          parkourState: {
+            ...parkourState,
+            available: true,
+            probability: 1.0 // 100% chance since it's mandatory
+          }
+        });
+      } else {
+        // If parkour is already completed, proceed to level complete
+        set({ gamePhase: "levelComplete" });
+      }
     },
     
     setDifficulty: (level: number) => {
@@ -352,17 +366,17 @@ export const useProbabilityGame = create<GameState>()(
       console.log(`Parkour completed! Map expanded to ${newMapSize}x${newMapSize}`);
       
       set({
-        gamePhase: "playing",
+        gamePhase: "levelComplete",
         mapSize: newMapSize,
         score: get().score + 500, // Bonus points for completing parkour
         parkourState: {
           available: false,
           currentLevel: nextParkourLevel,
-          completed: [...parkourState.completed, parkourState.currentLevel],
+          completed: [...parkourState.completed, currentLevel],
           probability: 0
         },
         probabilityEvents: [...get().probabilityEvents, {
-          type: `parkour_complete_level_${parkourState.currentLevel}`,
+          type: `parkour_complete_level_${currentLevel}`,
           probability: 1,
           success: true,
           timestamp: Date.now()

@@ -96,9 +96,7 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
     return () => clearTimeout(timer);
   }, []);
 
-  const parkourProbability = parkourLevel === 1 ? "1/4 (25%)" : 
-                            parkourLevel === 2 ? "1/6 (17%)" : 
-                            "1/10 (10%)";
+  const parkourProbability = "1/1 (100%)";
 
   return (
     <group>
@@ -146,7 +144,7 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
         outlineWidth={0.02}
         outlineColor="#000000"
       >
-        Probability: {parkourProbability}
+        Required Challenge
       </Text>
 
       {showHint && (
