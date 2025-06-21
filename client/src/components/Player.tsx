@@ -15,9 +15,16 @@ enum Controls {
 interface PlayerProps {
   powerUpActive?: boolean;
   mapSize?: number;
+  platforms?: Array<{
+    position: [number, number, number];
+    size: [number, number, number];
+    isFinish?: boolean;
+    isMoving?: boolean;
+    moveRange?: number;
+  }>;
 }
 
-const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false, mapSize = 30 }, ref) => {
+const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false, mapSize = 30, platforms = [] }, ref) => {
   const [subscribe, getState] = useKeyboardControls<Controls>();
   const velocity = useRef(new THREE.Vector3());
   const isJumping = useRef(false);
@@ -55,20 +62,56 @@ const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false, ma
 
     // Handle jumping
     if (controls.jump && !isJumping.current) {
-      jumpVelocity.current = 10;
+      jumpVelocity.current = 12; // Increased jump height for parkour
       isJumping.current = true;
       console.log("Jumping");
     }
 
+    // Check platform collisions
+    const checkPlatformCollision = (nextY: number) => {
+      for (const platform of platforms) {
+        const [px, py, pz] = platform.position;
+        const [sx, sy, sz] = platform.size;
+        
+        // Check if player is above the platform
+        const isInXBounds = Math.abs(player.current.position.x - px) <= sx / 2;
+        const isInZBounds = Math.abs(player.current.position.z - pz) <= sz / 2;
+        const isAbovePlatform = nextY <= py + sy / 2 && player.current.position.y > py + sy / 2;
+        
+        if (isInXBounds && isInZBounds && isAbovePlatform) {
+          return py + sy / 2; // Return platform top surface Y
+        }
+      }
+      return null;
+    };
+
     // Apply gravity and jumping
     if (isJumping.current) {
       jumpVelocity.current -= 30 * delta; // Gravity
-      player.current.position.y += jumpVelocity.current * delta;
+      const nextY = player.current.position.y + jumpVelocity.current * delta;
       
-      // Land on ground
-      if (player.current.position.y <= 1) {
-        player.current.position.y = 1;
+      // Check platform collision first
+      const platformY = checkPlatformCollision(nextY);
+      if (platformY !== null && jumpVelocity.current <= 0) {
+        player.current.position.y = platformY;
         isJumping.current = false;
+        jumpVelocity.current = 0;
+      } else {
+        player.current.position.y = nextY;
+        
+        // Land on ground if no platform
+        if (player.current.position.y <= 1) {
+          player.current.position.y = 1;
+          isJumping.current = false;
+          jumpVelocity.current = 0;
+        }
+      }
+    } else {
+      // Check if player should fall off platform
+      const currentPlatformY = checkPlatformCollision(player.current.position.y - 0.1);
+      if (currentPlatformY === null && player.current.position.y > 1) {
+        // Start falling
+        isJumping.current = true;
         jumpVelocity.current = 0;
       }
     }
@@ -84,10 +127,10 @@ const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false, ma
   });
 
   return (
-    <group ref={ref} position={[0, 1, 0]}>
+    <group ref={ref} position={[0, 2.5, 8]}>
       {/* Player body */}
       <mesh castShadow>
-        <boxGeometry args={[1, 2, 1]} />
+        <boxGeometry args={[0.8, 1.8, 0.8]} />
         <meshStandardMaterial 
           color={powerUpActive ? "#FFD700" : "#4A90E2"} 
           emissive={powerUpActive ? "#FFA500" : "#000000"}

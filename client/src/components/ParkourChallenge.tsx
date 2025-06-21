@@ -129,7 +129,7 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
       </mesh>
 
       {/* Player */}
-      <Player ref={playerRef} powerUpActive={false} mapSize={50} />
+      <Player ref={playerRef} powerUpActive={false} mapSize={50} platforms={platforms} />
 
       {/* Starting platform */}
       <mesh position={[0, 2, 8]} castShadow receiveShadow>
