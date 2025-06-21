@@ -1,9 +1,19 @@
 import { useRef, useEffect, useState, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Text } from "@react-three/drei";
+import { Text, useKeyboardControls } from "@react-three/drei";
 import { useProbabilityGame } from "../lib/stores/useProbabilityGame";
 import ParkourPlatform from "./ParkourPlatform";
+import Player from "./Player";
 import * as THREE from "three";
+
+enum Controls {
+  forward = 'forward',
+  back = 'back',
+  left = 'left',
+  right = 'right',
+  interact = 'interact',
+  jump = 'jump'
+}
 
 interface ParkourChallengeProps {
   parkourLevel: number;
@@ -13,10 +23,11 @@ interface ParkourChallengeProps {
 
 export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: ParkourChallengeProps) {
   const { currentLevel } = useProbabilityGame();
-  const playerDetectionRef = useRef<THREE.Vector3>(new THREE.Vector3());
+  const playerRef = useRef<THREE.Group>(null);
   const [playerOnPlatform, setPlayerOnPlatform] = useState(false);
   const [timeOnFinish, setTimeOnFinish] = useState(0);
   const [showHint, setShowHint] = useState(true);
+  const [subscribe, getState] = useKeyboardControls<Controls>();
 
   // Generate platforms based on parkour level difficulty
   const generatePlatforms = () => {
@@ -68,20 +79,31 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
   const finishPlatform = platforms.find(p => p.isFinish);
 
   useFrame((state) => {
-    if (!finishPlatform) return;
+    if (!finishPlatform || !playerRef.current) return;
     
     // Check if player is near the finish platform
-    const camera = state.camera;
+    const playerPos = playerRef.current.position;
     const finishPos = finishPlatform.position;
-    const distance = camera.position.distanceTo(new THREE.Vector3(finishPos[0], finishPos[1], finishPos[2]));
+    const distance = playerPos.distanceTo(new THREE.Vector3(finishPos[0], finishPos[1], finishPos[2]));
     
-    if (distance < 3 && camera.position.y > finishPos[1] - 1) {
+    // Camera follow player
+    const idealPosition = new THREE.Vector3(
+      playerPos.x,
+      playerPos.y + 8,
+      playerPos.z + 12
+    );
+    state.camera.position.lerp(idealPosition, 0.05);
+    state.camera.lookAt(playerPos);
+    
+    if (distance < 4 && playerPos.y > finishPos[1] - 2) {
       if (!playerOnPlatform) {
+        console.log("Player reached finish platform!");
         setPlayerOnPlatform(true);
         setTimeOnFinish(0);
       } else {
         setTimeOnFinish(prev => prev + 1);
-        if (timeOnFinish > 60) { // 1 second at 60fps
+        if (timeOnFinish > 30) { // 0.5 second at 60fps
+          console.log("Parkour completed!");
           onComplete();
         }
       }
@@ -99,32 +121,27 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
   const parkourProbability = "1/1 (100%)";
 
   return (
-    <group>
-      {/* Parkour entrance portal */}
-      <mesh position={[0, 3, 18]} castShadow>
-        <cylinderGeometry args={[3, 3, 6]} />
-        <meshStandardMaterial 
-          color="#9966FF" 
-          transparent 
-          opacity={0.7}
-          emissive="#6633CC"
-          emissiveIntensity={0.3}
-        />
+    <>
+      {/* Ground plane for parkour area */}
+      <mesh receiveShadow position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[50, 60]} />
+        <meshStandardMaterial color="#404040" />
       </mesh>
-      
-      {/* Portal glow effect */}
-      <pointLight
-        position={[0, 3, 18]}
-        intensity={2}
-        color="#9966FF"
-        distance={10}
-      />
+
+      {/* Player */}
+      <Player ref={playerRef} powerUpActive={false} mapSize={50} />
+
+      {/* Starting platform */}
+      <mesh position={[0, 1, 5]} castShadow receiveShadow>
+        <boxGeometry args={[4, 0.5, 4]} />
+        <meshStandardMaterial color="#228B22" />
+      </mesh>
 
       {/* Info display */}
       <Suspense fallback={null}>
         <Text
-          position={[0, 6, 18]}
-          fontSize={0.6}
+          position={[0, 6, 0]}
+          fontSize={0.8}
           color="#FFFFFF"
           anchorX="center"
           anchorY="middle"
@@ -136,8 +153,8 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
         </Text>
         
         <Text
-          position={[0, 5, 18]}
-          fontSize={0.4}
+          position={[0, 5, 0]}
+          fontSize={0.5}
           color="#FFFF99"
           anchorX="center"
           anchorY="middle"
@@ -145,13 +162,13 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
           outlineWidth={0.02}
           outlineColor="#000000"
         >
-          Required Challenge
+          Jump to the golden platform!
         </Text>
 
         {showHint && (
           <Text
-            position={[0, 4, 18]}
-            fontSize={0.3}
+            position={[0, 4, 0]}
+            fontSize={0.4}
             color="#FFFFFF"
             anchorX="center"
             anchorY="middle"
@@ -159,7 +176,7 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
             outlineWidth={0.02}
             outlineColor="#000000"
           >
-            Jump through platforms to reach the finish!
+            Use Q to jump and WASD to move
           </Text>
         )}
       </Suspense>
@@ -196,18 +213,44 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
       )}
 
       {/* Boundary walls for parkour area */}
-      <mesh position={[0, 5, -40]} castShadow>
-        <boxGeometry args={[30, 10, 1]} />
-        <meshStandardMaterial color="#654321" transparent opacity={0.8} />
+      <mesh position={[0, 5, -30]} castShadow>
+        <boxGeometry args={[50, 10, 1]} />
+        <meshStandardMaterial color="#654321" />
       </mesh>
-      <mesh position={[15, 5, -20]} castShadow>
-        <boxGeometry args={[1, 10, 40]} />
-        <meshStandardMaterial color="#654321" transparent opacity={0.8} />
+      <mesh position={[25, 5, -15]} castShadow>
+        <boxGeometry args={[1, 10, 30]} />
+        <meshStandardMaterial color="#654321" />
       </mesh>
-      <mesh position={[-15, 5, -20]} castShadow>
-        <boxGeometry args={[1, 10, 40]} />
-        <meshStandardMaterial color="#654321" transparent opacity={0.8} />
+      <mesh position={[-25, 5, -15]} castShadow>
+        <boxGeometry args={[1, 10, 30]} />
+        <meshStandardMaterial color="#654321" />
       </mesh>
-    </group>
+      <mesh position={[0, 5, 0]} castShadow>
+        <boxGeometry args={[50, 10, 1]} />
+        <meshStandardMaterial color="#654321" />
+      </mesh>
+
+      {/* Exit portal when completed */}
+      {playerOnPlatform && (
+        <group>
+          <mesh position={[0, 3, -25]} castShadow>
+            <cylinderGeometry args={[2, 2, 4]} />
+            <meshStandardMaterial 
+              color="#00FF00" 
+              transparent 
+              opacity={0.7}
+              emissive="#00AA00"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+          <pointLight
+            position={[0, 3, -25]}
+            intensity={1}
+            color="#00FF00"
+            distance={8}
+          />
+        </group>
+      )}
+    </>
   );
 }
