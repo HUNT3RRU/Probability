@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -85,47 +85,49 @@ export default function TreasureChest({ position, probability, onCollect, collec
       </mesh>
 
       {/* Probability display above chest */}
-      <Text
-        position={[0, 2.5, 0]}
-        fontSize={0.4}
-        color={hovered ? "#FFD700" : "#FFFFFF"}
-        anchorX="center"
-        anchorY="middle"
-        billboard
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {probabilityFraction}
-      </Text>
-      
-      <Text
-        position={[0, 2, 0]}
-        fontSize={0.3}
-        color={hovered ? "#FFD700" : "#FFFFFF"}
-        anchorX="center"
-        anchorY="middle"
-        billboard
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {probabilityPercent}% | {probability.toFixed(2)}
-      </Text>
-
-      {/* Interaction hint */}
-      {hovered && (
+      <Suspense fallback={null}>
         <Text
-          position={[0, 3, 0]}
-          fontSize={0.3}
-          color="#00FF00"
+          position={[0, 2.5, 0]}
+          fontSize={0.4}
+          color={hovered ? "#FFD700" : "#FFFFFF"}
           anchorX="center"
           anchorY="middle"
           billboard
           outlineWidth={0.02}
           outlineColor="#000000"
         >
-          Walk close to collect!
+          {probabilityFraction}
         </Text>
-      )}
+        
+        <Text
+          position={[0, 2, 0]}
+          fontSize={0.3}
+          color={hovered ? "#FFD700" : "#FFFFFF"}
+          anchorX="center"
+          anchorY="middle"
+          billboard
+          outlineWidth={0.02}
+          outlineColor="#000000"
+        >
+          {probabilityPercent}% | {probability.toFixed(2)}
+        </Text>
+
+        {/* Interaction hint */}
+        {hovered && (
+          <Text
+            position={[0, 3, 0]}
+            fontSize={0.3}
+            color="#00FF00"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Walk close to collect!
+          </Text>
+        )}
+      </Suspense>
 
       {/* Glowing effect when hovered */}
       {hovered && (

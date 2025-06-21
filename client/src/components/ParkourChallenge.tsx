@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import { useProbabilityGame } from "../lib/stores/useProbabilityGame";
@@ -121,46 +121,48 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
       />
 
       {/* Info display */}
-      <Text
-        position={[0, 6, 18]}
-        fontSize={0.6}
-        color="#FFFFFF"
-        anchorX="center"
-        anchorY="middle"
-        billboard
-        outlineWidth={0.03}
-        outlineColor="#000000"
-      >
-        Parkour Challenge {parkourLevel}
-      </Text>
-      
-      <Text
-        position={[0, 5, 18]}
-        fontSize={0.4}
-        color="#FFFF99"
-        anchorX="center"
-        anchorY="middle"
-        billboard
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        Required Challenge
-      </Text>
-
-      {showHint && (
+      <Suspense fallback={null}>
         <Text
-          position={[0, 4, 18]}
-          fontSize={0.3}
+          position={[0, 6, 18]}
+          fontSize={0.6}
           color="#FFFFFF"
+          anchorX="center"
+          anchorY="middle"
+          billboard
+          outlineWidth={0.03}
+          outlineColor="#000000"
+        >
+          Parkour Challenge {parkourLevel}
+        </Text>
+        
+        <Text
+          position={[0, 5, 18]}
+          fontSize={0.4}
+          color="#FFFF99"
           anchorX="center"
           anchorY="middle"
           billboard
           outlineWidth={0.02}
           outlineColor="#000000"
         >
-          Jump through platforms to reach the finish!
+          Required Challenge
         </Text>
-      )}
+
+        {showHint && (
+          <Text
+            position={[0, 4, 18]}
+            fontSize={0.3}
+            color="#FFFFFF"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Jump through platforms to reach the finish!
+          </Text>
+        )}
+      </Suspense>
 
       {/* Parkour platforms */}
       {platforms.map((platform, index) => (
@@ -177,18 +179,20 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
 
       {/* Progress indicator on finish platform */}
       {playerOnPlatform && finishPlatform && (
-        <Text
-          position={[finishPlatform.position[0], finishPlatform.position[1] + 3, finishPlatform.position[2]]}
-          fontSize={0.4}
-          color="#00FF00"
-          anchorX="center"
-          anchorY="middle"
-          billboard
-          outlineWidth={0.02}
-          outlineColor="#000000"
-        >
-          Completing... {Math.round((timeOnFinish / 60) * 100)}%
-        </Text>
+        <Suspense fallback={null}>
+          <Text
+            position={[finishPlatform.position[0], finishPlatform.position[1] + 3, finishPlatform.position[2]]}
+            fontSize={0.4}
+            color="#00FF00"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Completing... {Math.round((timeOnFinish / 60) * 100)}%
+          </Text>
+        </Suspense>
       )}
 
       {/* Boundary walls for parkour area */}

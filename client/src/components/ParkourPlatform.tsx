@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -52,18 +52,20 @@ export default function ParkourPlatform({
       
       {isFinish && (
         <>
-          <Text
-            position={[position[0], position[1] + 2, position[2]]}
-            fontSize={0.5}
-            color="#FFD700"
-            anchorX="center"
-            anchorY="middle"
-            billboard
-            outlineWidth={0.03}
-            outlineColor="#000000"
-          >
-            FINISH!
-          </Text>
+          <Suspense fallback={null}>
+            <Text
+              position={[position[0], position[1] + 2, position[2]]}
+              fontSize={0.5}
+              color="#FFD700"
+              anchorX="center"
+              anchorY="middle"
+              billboard
+              outlineWidth={0.03}
+              outlineColor="#000000"
+            >
+              FINISH!
+            </Text>
+          </Suspense>
           <pointLight
             position={[position[0], position[1] + 1, position[2]]}
             intensity={1}

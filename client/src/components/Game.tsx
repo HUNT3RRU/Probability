@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
-import { useKeyboardControls } from "@react-three/drei";
-import { useRef, useEffect } from "react";
+import { useKeyboardControls, Text } from "@react-three/drei";
+import { useRef, useEffect, Suspense } from "react";
 import * as THREE from "three";
 import Player from "./Player";
 import Environment from "./Environment";
@@ -161,67 +161,69 @@ export default function Game() {
 
       {/* Parkour Challenge Portal */}
       {parkourState.available && (
-        <group>
-          {/* Portal */}
-          <mesh position={[0, 3, 18]} castShadow>
-            <cylinderGeometry args={[3, 3, 6]} />
-            <meshStandardMaterial 
-              color="#9966FF" 
-              transparent 
-              opacity={0.7}
-              emissive="#6633CC"
-              emissiveIntensity={0.3}
+        <Suspense fallback={null}>
+          <group>
+            {/* Portal */}
+            <mesh position={[0, 3, 18]} castShadow>
+              <cylinderGeometry args={[3, 3, 6]} />
+              <meshStandardMaterial 
+                color="#9966FF" 
+                transparent 
+                opacity={0.7}
+                emissive="#6633CC"
+                emissiveIntensity={0.3}
+              />
+            </mesh>
+            
+            {/* Portal glow effect */}
+            <pointLight
+              position={[0, 3, 18]}
+              intensity={2}
+              color="#9966FF"
+              distance={10}
             />
-          </mesh>
-          
-          {/* Portal glow effect */}
-          <pointLight
-            position={[0, 3, 18]}
-            intensity={2}
-            color="#9966FF"
-            distance={10}
-          />
 
-          {/* Portal info display */}
-          <Text
-            position={[0, 6, 18]}
-            fontSize={0.6}
-            color="#FFFFFF"
-            anchorX="center"
-            anchorY="middle"
-            billboard
-            outlineWidth={0.03}
-            outlineColor="#000000"
-          >
-            Parkour Challenge {currentLevel}
-          </Text>
-          
-          <Text
-            position={[0, 5, 18]}
-            fontSize={0.4}
-            color="#FFFF99"
-            anchorX="center"
-            anchorY="middle"
-            billboard
-            outlineWidth={0.02}
-            outlineColor="#000000"
-          >
-            Required to advance!
-          </Text>
-          
-          <Text
-            position={[0, 4, 18]}
-            fontSize={0.3}
-            color="#FFFFFF"
-            anchorX="center"
-            anchorY="middle"
-            billboard
-            outlineWidth={0.02}
-            outlineColor="#000000"
-          >
-            Walk close to enter
-          </Text>
-        </group>
+            {/* Portal info display */}
+            <Text
+              position={[0, 6, 18]}
+              fontSize={0.6}
+              color="#FFFFFF"
+              anchorX="center"
+              anchorY="middle"
+              billboard
+              outlineWidth={0.03}
+              outlineColor="#000000"
+            >
+              Parkour Challenge {currentLevel}
+            </Text>
+            
+            <Text
+              position={[0, 5, 18]}
+              fontSize={0.4}
+              color="#FFFF99"
+              anchorX="center"
+              anchorY="middle"
+              billboard
+              outlineWidth={0.02}
+              outlineColor="#000000"
+            >
+              Required to advance!
+            </Text>
+            
+            <Text
+              position={[0, 4, 18]}
+              fontSize={0.3}
+              color="#FFFFFF"
+              anchorX="center"
+              anchorY="middle"
+              billboard
+              outlineWidth={0.02}
+              outlineColor="#000000"
+            >
+              Walk close to enter
+            </Text>
+          </group>
+        </Suspense>
       )}
     </>
   );
