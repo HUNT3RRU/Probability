@@ -13,6 +13,8 @@ export default function GameUI() {
     gamePhase, 
     weatherEvent,
     powerUpSpawn,
+    parkourState,
+    mapSize,
     nextLevel,
     restartLevel,
     startTutorial,
@@ -164,6 +166,48 @@ export default function GameUI() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Map size indicator */}
+      {mapSize > 30 && (
+        <div className="fixed top-4 right-1/4 z-40">
+          <Card className="bg-white bg-opacity-90 border-green-200">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🗺️</span>
+                <div>
+                  <p className="text-sm font-medium text-green-800">
+                    Expanded Map!
+                  </p>
+                  <p className="text-xs text-green-600">
+                    Size: {mapSize}x{mapSize}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Parkour available indicator */}
+      {parkourState.available && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-40">
+          <Card className="bg-white bg-opacity-90 border-purple-200 animate-pulse">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🎯</span>
+                <div>
+                  <p className="text-sm font-medium text-purple-800">
+                    Parkour Challenge Available!
+                  </p>
+                  <p className="text-xs text-purple-600">
+                    Walk to the purple portal
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Probability Learning Panel */}
       <ProbabilityDisplay />

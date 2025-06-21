@@ -5,6 +5,7 @@ import * as THREE from "three";
 import Player from "./Player";
 import Environment from "./Environment";
 import TreasureChest from "./TreasureChest";
+import ParkourChallenge from "./ParkourChallenge";
 import { useProbabilityGame } from "../lib/stores/useProbabilityGame";
 import { useAudio } from "../lib/stores/useAudio";
 
@@ -23,12 +24,18 @@ export default function Game() {
     score, 
     treasuresFound, 
     gamePhase,
+    mapSize,
     collectTreasure,
     completeLevel,
     weatherEvent,
     powerUpSpawn,
+    parkourState,
     checkWeatherEvent,
-    checkPowerUpSpawn
+    checkPowerUpSpawn,
+    checkParkourSpawn,
+    startParkour,
+    completeParkour,
+    failParkour
   } = useProbabilityGame();
   
   const { playHit, playSuccess } = useAudio();
@@ -36,9 +43,10 @@ export default function Game() {
   const playerRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera>(null);
 
-  // Weather and power-up timers
+  // Weather, power-up, and parkour timers
   const weatherTimer = useRef(0);
   const powerUpTimer = useRef(0);
+  const parkourTimer = useRef(0);
 
   // Log controls for debugging
   useEffect(() => {
@@ -79,10 +87,29 @@ export default function Game() {
       powerUpTimer.current = 0;
     }
 
+    // Update parkour timer and check for parkour spawns
+    parkourTimer.current += delta;
+    if (parkourTimer.current > 7) { // Check every 7 seconds
+      checkParkourSpawn();
+      parkourTimer.current = 0;
+    }
+
     // Check if level is complete
     if (treasuresFound.length >= treasurePositions.length) {
       completeLevel();
       playSuccess();
+    }
+
+    // Check for parkour portal interaction
+    if (parkourState.available && playerRef.current) {
+      const playerPos = playerRef.current.position;
+      const portalDistance = Math.sqrt(
+        Math.pow(playerPos.x - 0, 2) + 
+        Math.pow(playerPos.z - 18, 2)
+      );
+      if (portalDistance < 4) {
+        startParkour();
+      }
     }
 
     // Camera follow player
@@ -107,10 +134,10 @@ export default function Game() {
   return (
     <>
       {/* Environment */}
-      <Environment weatherEvent={weatherEvent} />
+      <Environment weatherEvent={weatherEvent} mapSize={mapSize} />
       
       {/* Player */}
-      <Player ref={playerRef} powerUpActive={powerUpSpawn.active} />
+      <Player ref={playerRef} powerUpActive={powerUpSpawn.active} mapSize={mapSize} />
       
       {/* Treasure Chests */}
       {treasurePositions.map((pos, index) => (
@@ -129,6 +156,58 @@ export default function Game() {
           <sphereGeometry args={[0.5, 16, 16]} />
           <meshStandardMaterial color="gold" emissive="orange" emissiveIntensity={0.3} />
         </mesh>
+      )}
+
+      {/* Parkour Challenge Portal */}
+      {parkourState.available && (
+        <group>
+          {/* Portal */}
+          <mesh position={[0, 3, 18]} castShadow>
+            <cylinderGeometry args={[3, 3, 6]} />
+            <meshStandardMaterial 
+              color="#9966FF" 
+              transparent 
+              opacity={0.7}
+              emissive="#6633CC"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+          
+          {/* Portal glow effect */}
+          <pointLight
+            position={[0, 3, 18]}
+            intensity={2}
+            color="#9966FF"
+            distance={10}
+          />
+
+          {/* Portal info display */}
+          <Text
+            position={[0, 6, 18]}
+            fontSize={0.6}
+            color="#FFFFFF"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.03}
+            outlineColor="#000000"
+          >
+            Parkour Challenge {parkourState.currentLevel}
+          </Text>
+          
+          <Text
+            position={[0, 5, 18]}
+            fontSize={0.4}
+            color="#FFFF99"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            Walk close to enter!
+          </Text>
+        </group>
       )}
     </>
   );

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
-export type GamePhase = "tutorial" | "playing" | "paused" | "levelComplete" | "gameOver";
+export type GamePhase = "tutorial" | "playing" | "paused" | "levelComplete" | "gameOver" | "parkour";
 
 export interface WeatherEvent {
   active: boolean;
@@ -17,16 +17,25 @@ export interface PowerUpSpawn {
   duration: number;
 }
 
+export interface ParkourState {
+  available: boolean;
+  currentLevel: number;
+  completed: number[];
+  probability: number;
+}
+
 interface GameState {
   // Game state
   gamePhase: GamePhase;
   currentLevel: number;
   score: number;
   treasuresFound: string[];
+  mapSize: number;
   
   // Probability events
   weatherEvent: WeatherEvent;
   powerUpSpawn: PowerUpSpawn;
+  parkourState: ParkourState;
   
   // Statistics
   totalTreasuresCollected: number;
@@ -51,6 +60,12 @@ interface GameState {
   // Probability events
   checkWeatherEvent: () => void;
   checkPowerUpSpawn: () => void;
+  checkParkourSpawn: () => void;
+  
+  // Parkour actions
+  startParkour: () => void;
+  completeParkour: () => void;
+  failParkour: () => void;
 }
 
 export const useProbabilityGame = create<GameState>()(
@@ -60,6 +75,7 @@ export const useProbabilityGame = create<GameState>()(
     currentLevel: 1,
     score: 0,
     treasuresFound: [],
+    mapSize: 30,
     
     weatherEvent: {
       active: false,
@@ -73,6 +89,13 @@ export const useProbabilityGame = create<GameState>()(
       type: "speed",
       probability: 0,
       duration: 0
+    },
+    
+    parkourState: {
+      available: false,
+      currentLevel: 1,
+      completed: [],
+      probability: 0.25
     },
     
     totalTreasuresCollected: 0,
@@ -278,6 +301,85 @@ export const useProbabilityGame = create<GameState>()(
           });
         }, 8000);
       }
+    },
+
+    checkParkourSpawn: () => {
+      const { parkourState, treasuresFound, currentLevel } = get();
+      
+      // Don't check if parkour is already available or if not enough treasures collected
+      if (parkourState.available || treasuresFound.length < 3) return;
+      
+      // Parkour probabilities decrease as levels get harder
+      const parkourProbabilities = {
+        1: 0.25, // Easy: 25% (1/4)
+        2: 0.17, // Medium: 17% (1/6) 
+        3: 0.10  // Hard: 10% (1/10)
+      };
+      
+      const probability = parkourProbabilities[currentLevel as keyof typeof parkourProbabilities] || 0.25;
+      const roll = Math.random();
+      
+      if (roll <= probability) {
+        console.log(`Parkour challenge spawned! (${Math.round(probability * 100)}%)`);
+        
+        set({
+          parkourState: {
+            available: true,
+            currentLevel: Math.min(parkourState.currentLevel, 3),
+            completed: parkourState.completed,
+            probability
+          },
+          probabilityEvents: [...get().probabilityEvents, {
+            type: `parkour_spawn_level_${currentLevel}`,
+            probability,
+            success: true,
+            timestamp: Date.now()
+          }]
+        });
+      }
+    },
+
+    startParkour: () => {
+      console.log("Starting parkour challenge");
+      set({ gamePhase: "parkour" });
+    },
+
+    completeParkour: () => {
+      const { parkourState, mapSize, currentLevel } = get();
+      const newMapSize = mapSize + 20; // Increase map size by 20 units
+      const nextParkourLevel = Math.min(parkourState.currentLevel + 1, 3);
+      
+      console.log(`Parkour completed! Map expanded to ${newMapSize}x${newMapSize}`);
+      
+      set({
+        gamePhase: "playing",
+        mapSize: newMapSize,
+        score: get().score + 500, // Bonus points for completing parkour
+        parkourState: {
+          available: false,
+          currentLevel: nextParkourLevel,
+          completed: [...parkourState.completed, parkourState.currentLevel],
+          probability: 0
+        },
+        probabilityEvents: [...get().probabilityEvents, {
+          type: `parkour_complete_level_${parkourState.currentLevel}`,
+          probability: 1,
+          success: true,
+          timestamp: Date.now()
+        }]
+      });
+    },
+
+    failParkour: () => {
+      console.log("Parkour failed, returning to main game");
+      set({
+        gamePhase: "playing",
+        parkourState: {
+          ...get().parkourState,
+          available: false,
+          probability: 0
+        }
+      });
     }
   }))
 );

@@ -6,6 +6,7 @@ import "@fontsource/inter";
 import Game from "./components/Game";
 import GameUI from "./components/GameUI";
 import Tutorial from "./components/Tutorial";
+import ParkourChallenge from "./components/ParkourChallenge";
 import { useProbabilityGame } from "./lib/stores/useProbabilityGame";
 import { useAudio } from "./lib/stores/useAudio";
 
@@ -31,7 +32,7 @@ const controlMap = [
 const queryClient = new QueryClient();
 
 function App() {
-  const { gamePhase } = useProbabilityGame();
+  const { gamePhase, parkourState, completeParkour, failParkour } = useProbabilityGame();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,7 +40,7 @@ function App() {
         <KeyboardControls map={controlMap}>
           {gamePhase === 'tutorial' && <Tutorial />}
           
-          {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'levelComplete') && (
+          {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'levelComplete' || gamePhase === 'parkour') && (
             <>
               <Canvas
                 shadows
@@ -72,7 +73,15 @@ function App() {
                 />
 
                 <Suspense fallback={null}>
-                  <Game />
+                  {gamePhase === 'parkour' ? (
+                    <ParkourChallenge 
+                      parkourLevel={parkourState.currentLevel} 
+                      onComplete={completeParkour} 
+                      onFail={failParkour} 
+                    />
+                  ) : (
+                    <Game />
+                  )}
                 </Suspense>
               </Canvas>
               <GameUI />

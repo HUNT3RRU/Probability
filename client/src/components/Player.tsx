@@ -14,9 +14,10 @@ enum Controls {
 
 interface PlayerProps {
   powerUpActive?: boolean;
+  mapSize?: number;
 }
 
-const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false }, ref) => {
+const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false, mapSize = 30 }, ref) => {
   const [subscribe, getState] = useKeyboardControls<Controls>();
   const velocity = useRef(new THREE.Vector3());
   const isJumping = useRef(false);
@@ -76,9 +77,10 @@ const Player = forwardRef<THREE.Group, PlayerProps>(({ powerUpActive = false }, 
     player.current.position.x += velocity.current.x * delta;
     player.current.position.z += velocity.current.z * delta;
 
-    // Keep player within bounds
-    player.current.position.x = Math.max(-15, Math.min(15, player.current.position.x));
-    player.current.position.z = Math.max(-15, Math.min(15, player.current.position.z));
+    // Keep player within dynamic bounds based on map size  
+    const bounds = mapSize / 2;
+    player.current.position.x = Math.max(-bounds, Math.min(bounds, player.current.position.x));
+    player.current.position.z = Math.max(-bounds, Math.min(bounds, player.current.position.z));
   });
 
   return (
