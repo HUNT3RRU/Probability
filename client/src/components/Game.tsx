@@ -60,13 +60,33 @@ export default function Game() {
   }, [subscribe]);
 
   // Generate treasure positions for current level
-  const treasurePositions = [
-    { x: 5, z: 5, probability: currentLevel === 1 ? 0.5 : currentLevel === 2 ? 0.33 : 0.25 },
-    { x: -5, z: 5, probability: currentLevel === 1 ? 0.75 : currentLevel === 2 ? 0.5 : 0.4 },
-    { x: 5, z: -5, probability: currentLevel === 1 ? 0.25 : currentLevel === 2 ? 0.66 : 0.6 },
-    { x: -5, z: -5, probability: currentLevel === 1 ? 0.6 : currentLevel === 2 ? 0.2 : 0.15 },
-    { x: 0, z: 8, probability: currentLevel === 1 ? 0.8 : currentLevel === 2 ? 0.75 : 0.8 },
-  ];
+  const generateTreasurePositions = () => {
+    const positions = [];
+    const numTreasures = Math.min(7 + currentLevel * 2, 12); // More treasures per level
+    
+    for (let i = 0; i < numTreasures; i++) {
+      const angle = (i / numTreasures) * Math.PI * 2;
+      const radius = 8 + Math.random() * (mapSize / 3);
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      
+      // Make one chest per level special (requires mini-parkour)
+      const isSpecialChest = i === numTreasures - 1; // Last chest is special
+      
+      positions.push({
+        id: `treasure-${i}`,
+        position: [x, 1, z] as [number, number, number],
+        probability: Math.max(0.3, 0.9 - currentLevel * 0.1),
+        requiresParkour: isSpecialChest
+      });
+    }
+    
+    return positions;
+  };
+
+  const treasurePositions = generateTreasurePositions();
+  const [miniParkourActive, setMiniParkourActive] = useState(false);
+  const [miniParkourTreasure, setMiniParkourTreasure] = useState<any>(null);
 
   useFrame((state, delta) => {
     if (gamePhase !== 'playing') return;
@@ -131,6 +151,31 @@ export default function Game() {
     playHit();
   };
 
+  // Handle mini-parkour completion
+  const handleMiniParkourComplete = () => {
+    if (miniParkourTreasure) {
+      collectTreasure(miniParkourTreasure.id, miniParkourTreasure.probability);
+      setMiniParkourActive(false);
+      setMiniParkourTreasure(null);
+      playSuccess();
+    }
+  };
+
+  const handleMiniParkourFail = () => {
+    setMiniParkourActive(false);
+    setMiniParkourTreasure(null);
+  };
+
+  if (miniParkourActive && miniParkourTreasure) {
+    return (
+      <MiniParkour
+        treasureId={miniParkourTreasure.id}
+        onComplete={handleMiniParkourComplete}
+        onFail={handleMiniParkourFail}
+      />
+    );
+  }
+
   return (
     <>
       {/* Environment */}
@@ -140,14 +185,20 @@ export default function Game() {
       <Player ref={playerRef} powerUpActive={powerUpSpawn.active} mapSize={mapSize} />
       
       {/* Treasure Chests */}
-      {treasurePositions.map((pos, index) => (
+      {treasurePositions.map((treasure, index) => (
         <TreasureChest
-          key={`treasure-${currentLevel}-${index}`}
-          position={[pos.x, 0.5, pos.z]}
-          probability={pos.probability}
-          onCollect={() => handleTreasureCollect(`treasure-${index}`, pos.probability)}
-          collected={treasuresFound.includes(`treasure-${index}`)}
+          key={treasure.id}
+          position={treasure.position}
+          probability={treasure.probability}
+          onCollect={() => handleTreasureCollect(treasure.id, treasure.probability)}
+          collected={treasuresFound.includes(treasure.id)}
           playerRef={playerRef}
+          requiresParkour={treasure.requiresParkour}
+          onParkourTrigger={() => {
+            console.log("Mini-parkour triggered for treasure:", treasure.id);
+            setMiniParkourActive(true);
+            setMiniParkourTreasure(treasure);
+          }}
         />
       ))}
       

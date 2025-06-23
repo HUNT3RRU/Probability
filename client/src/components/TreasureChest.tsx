@@ -9,9 +9,11 @@ interface TreasureChestProps {
   onCollect: () => void;
   collected: boolean;
   playerRef?: React.RefObject<THREE.Group>;
+  requiresParkour?: boolean;
+  onParkourTrigger?: () => void;
 }
 
-export default function TreasureChest({ position, probability, onCollect, collected, playerRef }: TreasureChestProps) {
+export default function TreasureChest({ position, probability, onCollect, collected, playerRef, requiresParkour = false, onParkourTrigger }: TreasureChestProps) {
   const [hovered, setHovered] = useState(false);
   const meshRef = useRef<THREE.Group>(null);
   const { scene } = useThree();
@@ -53,7 +55,25 @@ export default function TreasureChest({ position, probability, onCollect, collec
       // Auto-collect when player is close enough
       if (distance < 2.5) {
         console.log(`Collecting treasure! Distance: ${distance.toFixed(2)}`);
-        onCollect();
+        
+        if (requiresParkour && onParkourTrigger) {
+          onParkourTrigger();
+        } else {
+          // Roll for treasure collection
+          const roll = Math.random();
+          console.log(`Treasure Roll ${roll.toFixed(3)} vs ${probability.toFixed(3)} = ${roll < probability ? 'SUCCESS' : 'FAIL'}`);
+          
+          if (roll < probability) {
+            onCollect();
+          } else {
+            // Try again with a different roll
+            const secondRoll = Math.random();
+            console.log(`Treasure Second Roll ${secondRoll.toFixed(3)} vs ${probability.toFixed(3)} = ${secondRoll < probability ? 'SUCCESS' : 'FAIL'}`);
+            if (secondRoll < probability) {
+              onCollect();
+            }
+          }
+        }
       }
     } else {
       setHovered(false);
@@ -68,9 +88,11 @@ export default function TreasureChest({ position, probability, onCollect, collec
       <mesh castShadow receiveShadow>
         <boxGeometry args={[1.5, 1, 1]} />
         <meshStandardMaterial 
-          color={hovered ? "#DAA520" : "#8B4513"} 
-          metalness={0.3}
-          roughness={0.7}
+          color={collected ? "#666666" : requiresParkour ? "#9966FF" : hovered ? "#DAA520" : "#8B4513"} 
+          metalness={0.6}
+          roughness={0.5}
+          emissive={requiresParkour ? "#6633CC" : "#000000"}
+          emissiveIntensity={requiresParkour ? 0.2 : 0}
         />
       </mesh>
       
@@ -78,7 +100,7 @@ export default function TreasureChest({ position, probability, onCollect, collec
       <mesh position={[0, 0.6, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.5, 0.2, 1]} />
         <meshStandardMaterial 
-          color={hovered ? "#FFD700" : "#CD853F"} 
+          color={collected ? "#555555" : requiresParkour ? "#BB77FF" : hovered ? "#FFD700" : "#CD853F"} 
           metalness={0.5}
           roughness={0.5}
         />
@@ -124,7 +146,23 @@ export default function TreasureChest({ position, probability, onCollect, collec
             outlineWidth={0.02}
             outlineColor="#000000"
           >
-            Walk close to collect!
+            {requiresParkour ? "Parkour Chest - Walk close!" : "Walk close to collect!"}
+          </Text>
+        )}
+
+        {/* Special parkour indicator */}
+        {requiresParkour && (
+          <Text
+            position={[0, 1.5, 0]}
+            fontSize={0.25}
+            color="#FFFF99"
+            anchorX="center"
+            anchorY="middle"
+            billboard
+            outlineWidth={0.02}
+            outlineColor="#000000"
+          >
+            PARKOUR CHEST
           </Text>
         )}
       </Suspense>
