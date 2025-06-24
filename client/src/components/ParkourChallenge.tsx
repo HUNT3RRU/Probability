@@ -212,7 +212,23 @@ export default function ParkourChallenge({ parkourLevel, onComplete, onFail }: P
         </Suspense>
       )}
 
-
+      {/* Boundary walls for parkour area */}
+      <mesh position={[0, 5, -30]} castShadow>
+        <boxGeometry args={[50, 10, 1]} />
+        <meshStandardMaterial color="#654321" />
+      </mesh>
+      <mesh position={[25, 5, -15]} castShadow>
+        <boxGeometry args={[1, 10, 30]} />
+        <meshStandardMaterial color="#654321" />
+      </mesh>
+      <mesh position={[-25, 5, -15]} castShadow>
+        <boxGeometry args={[1, 10, 30]} />
+        <meshStandardMaterial color="#654321" />
+      </mesh>
+      <mesh position={[0, 5, 0]} castShadow>
+        <boxGeometry args={[50, 10, 1]} />
+        <meshStandardMaterial color="#654321" />
+      </mesh>
 
       {/* Exit portal when completed */}
       {playerOnPlatform && (
