@@ -6,6 +6,7 @@ import Player from "./Player";
 import Environment from "./Environment";
 import TreasureChest from "./TreasureChest";
 import ParkourChallenge from "./ParkourChallenge";
+import MiniParkour from "./MiniParkour";
 import { useProbabilityGame } from "../lib/stores/useProbabilityGame";
 import { useAudio } from "../lib/stores/useAudio";
 
