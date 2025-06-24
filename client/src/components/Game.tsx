@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useKeyboardControls, Text } from "@react-three/drei";
-import { useRef, useEffect, Suspense } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import * as THREE from "three";
 import Player from "./Player";
 import Environment from "./Environment";
